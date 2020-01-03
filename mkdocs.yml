@@ -1,0 +1,20 @@
+site_name: GeoVectors
+site_description: Vectorized geodesic calculations.
+site_author: Oleg Medvedev
+
+repo_url: https://github.com/omdv/geovectors
+edit_uri: https://github.com/omdv/geovectors/edit/master/docs
+
+theme: readthedocs
+
+markdown_extensions:
+  - codehilite:
+      linenums: true
+
+nav:
+- Home: index.md
+- Advanced: advanced.md
+- About:
+  - Release Notes: about/changelog.md
+  - Contributing: about/contributing.md
+  - License: about/license.md
