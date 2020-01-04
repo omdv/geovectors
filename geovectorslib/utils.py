@@ -1,7 +1,5 @@
-"""A sample module."""
-
-import log
 import numpy as np
+
 
 def wrap90deg(deg: 'np.ndarray') -> 'np.ndarray':
     """
