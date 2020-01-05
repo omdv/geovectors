@@ -48,6 +48,13 @@ def describe_inverse():
         # not testing azimuth, as it varies from 0-360deg.
         np.testing.assert_allclose(g2s['s12'], s12, rtol=1e-5, atol=1e-5)
 
+    def large_size():
+        np.random.seed(42)
+        lats1 = np.random.uniform(-90,90,100000)
+        lons1 = np.random.uniform(-180,180,100000)
+        lats2 = np.random.uniform(-90,90,100000)
+        lons2 = np.random.uniform(-180,180,100000)
+        _ = geod.inverse(lats1, lons1, lats2, lons2)
 
 def describe_direct():
     def calculate(expect):

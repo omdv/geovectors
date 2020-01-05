@@ -77,7 +77,9 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
         ) * (cosU1 * sinU2 - sinU1 * cosU2 * cosdelta)
 
         # co-incident/antipodal points mask - exclude from the rest of the loop
-        m = (np.abs(sinSqsigma) > eps) & (sinSqsigma != np.nan)
+        # the value has to be about 1.e-4 experimentally
+        # otherwise there are issues with convergence for near antipodal points
+        m = (np.abs(sinSqsigma) > 1.e-4) & (sinSqsigma != np.nan)
 
         sinsigma[m] = np.sqrt(sinSqsigma[m])
         cossigma[m] = sinU1[m] * sinU2[m] + cosU1[m] * cosU2[m] * cosdelta[m]
@@ -106,7 +108,7 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
             raise Exception('delta > np.pi')
 
         iterations += 1
-        if iterations >= 20:
+        if iterations >= 100:
             raise Exception('Vincenty formula failed to converge')
 
     uSq = cosSqazi * (a * a - b * b) / (b * b)
