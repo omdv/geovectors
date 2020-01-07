@@ -30,6 +30,7 @@ classifiers = [
 
 python = "^3.7"
 numpy = "^1.18.0"
+geographiclib = "^1.50"
 
 [tool.poetry.dev-dependencies]
 

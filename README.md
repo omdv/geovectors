@@ -7,20 +7,31 @@
 [![PyPI Version](https://img.shields.io/pypi/v/GeoVectors.svg)](https://pypi.org/project/GeoVectors)
 [![PyPI License](https://img.shields.io/pypi/l/GeoVectors.svg)](https://pypi.org/project/GeoVectors)
 
-Python library for vectorized geodesic calculations with both direct and inverse methods. While working on a project for sailboat weather routing I needed a fast and accurate geodesic methods for direct and inverse great circle route calculations.
+This library provides vectorized direct and inverse geodesic methods.
 
-I found few python libraries with such functionality, however none of them had a vectorized form.
+The motivation was to have the accurate and fast vectorized geodesic routines for sailboat routing project. Now there are a couple of python libraries, with [geographiclib](https://geographiclib.sourceforge.io/html/python/index.html) being the most accurate and reliable. Haversine method, which is widely used as an example of fast inverse method can be vectorized rather easily, however the errors are expected to be at [least 0.5%](https://en.wikipedia.org/wiki/Haversine_formula#Formulation). There are no vectorized AND accurate options.
 
-The two most commonly used methods are Haversine and Vincenty. Haversine is approximate, so errors may accumulate over long distances, but very computationally effective. Vincenty is a standard method, delivering a millimeter-level accuracies.
+This library is based on `numpy` and uses [Vincenty's formulae](https://en.wikipedia.org/wiki/Vincenty's_formulae). It is heavily based on the [Movable Type Scripts blog](https://www.movable-type.co.uk/scripts/latlong-vincenty.html) and Javascript [Geodesy](https://www.npmjs.com/package/geodesy) code.
 
-This library is based on `numpy` and uses Vincenty implementation and in particular is based on this excellent [blog](https://www.movable-type.co.uk/scripts/latlong-vincenty.html) and javascript [geodesy](https://www.npmjs.com/package/geodesy) package.
+Vincenty's inverse algorithm is accurate, but sensitive to [nearly antipodal points](https://en.wikipedia.org/wiki/Vincenty%27s_formulae#Nearly_antipodal_points). One approach would be to return `NaN` for such points, with the assumption that they are not frequently observed in practical applications, however as [this discussion](https://gis.stackexchange.com/questions/84885/difference-between-vincenty-and-great-circle-distance-calculations) nicely pointed out the package cannot be complete if it cannot handle these situations. I found that the issue can be solved by relaxing one of convergence criterias, but it results in errors up to 0.25% vs geographiclib for these points.
 
-### Speed improvement
-O(n) for non-vectorized vs O(log n) for this one.
-Details to be added.
+So, instead, this library uses the vectorized Vincenty's formulae with **geographiclib as a fallback** for not converged points.
 
-### Known issues
-The implementation of Inverse problem is sensitive to near-antipodal points. It is a common issue, shared by geodesy package as well, try for instance the inverse problem between [16.24568372,124.84613035] and [-16.70728358, -55.2234313]. I expect my package to converge, but I found the error for such near antipodal points to reach 0.25% vs Geographicslib.
+See [notebook]() for execution time comparisons.
+
+Direct method for 100,000 points:
+```
+94.9 ms ± 25 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+vs
+9.79 s ± 1.4 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
+```
+
+Inverse method for 100,000 points:
+```
+1.5 s ± 504 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+vs
+24.2 s ± 3.91 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
+```
 
 # Setup
 
@@ -53,7 +64,13 @@ $ python
 ```
 
 # References
+
 [Movable Type Scripts](https://www.movable-type.co.uk/scripts/latlong-vincenty.html)
+
 [Geodesy](https://www.npmjs.com/package/geodesy)
+
 [Geopy](https://pypi.org/project/geopy/)
+
 [Geographiclib](https://geographiclib.sourceforge.io/html/python/index.html)
+
+[Stackoverflow discussion](https://gis.stackexchange.com/questions/84885/difference-between-vincenty-and-great-circle-distance-calculations)

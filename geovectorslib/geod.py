@@ -1,4 +1,5 @@
 import numpy as np
+from geographiclib.geodesic import Geodesic
 
 from geovectorslib.utils import wrap90deg, wrap180deg, wrap360deg
 
@@ -31,12 +32,12 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     L = lon2 - lon1
 
     # U = reduced latitude, defined by tan U = (1-f)·tanφ.
-    tanU1 = (1 - f) * np.tan(lat1)
-    cosU1 = 1 / np.sqrt((1 + tanU1 * tanU1))
-    sinU1 = tanU1 * cosU1
-    tanU2 = (1 - f) * np.tan(lat2)
-    cosU2 = 1 / np.sqrt((1 + tanU2 * tanU2))
-    sinU2 = tanU2 * cosU2
+    tan_U1 = (1 - f) * np.tan(lat1)
+    cos_U1 = 1 / np.sqrt((1 + tan_U1 * tan_U1))
+    sin_U1 = tan_U1 * cos_U1
+    tan_U2 = (1 - f) * np.tan(lat2)
+    cos_U2 = 1 / np.sqrt((1 + tan_U2 * tan_U2))
+    sin_U2 = tan_U2 * cos_U2
 
     # checks for antipodal points
     antipodal = (np.abs(L) > np.pi / 2) | (np.abs(lat2 - lat1) > np.pi / 2)
@@ -48,101 +49,97 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     sigma = np.zeros(lat1.shape)
     sigma[antipodal] = np.pi
 
-    cossigma = np.ones(lat1.shape)
-    cossigma[antipodal] = -1
+    cos_sigma = np.ones(lat1.shape)
+    cos_sigma[antipodal] = -1
 
     # sigmam = angular distance on the sphere from the equator
     # to the midpoint of the line
     # azi = azimuth of the geodesic at the equator
-    deltaprime = np.zeros(lat1.shape)
+    delta_prime = np.zeros(lat1.shape)
     iterations = 0
 
     # init before loop to allow mask indexing
-    sinSqsigma = np.zeros(lat1.shape)
-    sinsigma = np.zeros(lat1.shape)
-    cossigma = np.zeros(lat1.shape)
-    sinazi = np.zeros(lat1.shape)
-    cosSqazi = np.ones(lat1.shape)
-    cos2sigmam = np.ones(lat1.shape)
+    sin_Sq_sigma = np.zeros(lat1.shape)
+    sin_sigma = np.zeros(lat1.shape)
+    cos_sigma = np.zeros(lat1.shape)
+    sin_azi = np.zeros(lat1.shape)
+    cos_Sq_azi = np.ones(lat1.shape)
+    cos_2_sigma_m = np.ones(lat1.shape)
     C = np.ones(lat1.shape)
 
     # init mask
     m = np.ones(lat1.shape, dtype=bool)
+    conv_mask = np.zeros(lat1.shape, dtype=bool)
 
-    while (np.abs(delta[m] - deltaprime[m]) > 1e-12).any():
-        sindelta = np.sin(delta)
-        cosdelta = np.cos(delta)
-        sinSqsigma = (cosU2 * sindelta) * (cosU2 * sindelta) + (
-            cosU1 * sinU2 - sinU1 * cosU2 * cosdelta
-        ) * (cosU1 * sinU2 - sinU1 * cosU2 * cosdelta)
+    while (np.abs(delta[m] - delta_prime[m]) > 1e-12).any():
+        sin_delta = np.sin(delta)
+        cos_delta = np.cos(delta)
+        sin_Sq_sigma = (cos_U2 * sin_delta) * (cos_U2 * sin_delta) + (
+            cos_U1 * sin_U2 - sin_U1 * cos_U2 * cos_delta
+        ) * (cos_U1 * sin_U2 - sin_U1 * cos_U2 * cos_delta)
 
         # co-incident/antipodal points mask - exclude from the rest of the loop
         # the value has to be about 1.e-4 experimentally
         # otherwise there are issues with convergence for near antipodal points
-        m = (np.abs(sinSqsigma) > 1.e-4) & (sinSqsigma != np.nan)
+        m = (np.abs(sin_Sq_sigma) > eps) & (sin_Sq_sigma != np.nan)
 
-        sinsigma[m] = np.sqrt(sinSqsigma[m])
-        cossigma[m] = sinU1[m] * sinU2[m] + cosU1[m] * cosU2[m] * cosdelta[m]
-        sigma[m] = np.arctan2(sinsigma[m], cossigma[m])
-        sinazi[m] = cosU1[m] * cosU2[m] * sindelta[m] / sinsigma[m]
-        cosSqazi[m] = 1 - sinazi[m] * sinazi[m]
+        sin_sigma[m] = np.sqrt(sin_Sq_sigma[m])
+        cos_sigma[m] = sin_U1[m] * sin_U2[m] + cos_U1[m] * cos_U2[m] * cos_delta[m]
+        sigma[m] = np.arctan2(sin_sigma[m], cos_sigma[m])
+        sin_azi[m] = cos_U1[m] * cos_U2[m] * sin_delta[m] / sin_sigma[m]
+        cos_Sq_azi[m] = 1 - sin_azi[m] * sin_azi[m]
 
         # on equatorial line cos²azi = 0
-        cos2sigmam[m] = cossigma[m] - 2 * sinU1[m] * sinU2[m] / cosSqazi[m]
-        cos2sigmam[cosSqazi == 0] = 0
+        cos_2_sigma_m[m] = cos_sigma[m] - 2 * sin_U1[m] * sin_U2[m] / cos_Sq_azi[m]
+        cos_2_sigma_m[cos_Sq_azi == 0] = 0
 
-        C[m] = f / 16 * cosSqazi[m] * (4 + f * (4 - 3 * cosSqazi[m]))
+        C[m] = f / 16 * cos_Sq_azi[m] * (4 + f * (4 - 3 * cos_Sq_azi[m]))
 
-        deltaprime = delta
-        delta = L + (1 - C) * f * sinazi * (
+        delta_prime = delta
+        delta = L + (1 - C) * f * sin_azi * (
             sigma
-            + C
-            * sinsigma
-            * (cos2sigmam + C * cossigma * (-1 + 2 * cos2sigmam * cos2sigmam))
+            + (C * sin_sigma)
+            * (cos_2_sigma_m + C * cos_sigma * (-1 + 2 * cos_2_sigma_m * cos_2_sigma_m))
         )
 
         # Exceptions
-        iterationCheck = np.abs(delta)
-        iterationCheck[antipodal] = iterationCheck[antipodal] - np.pi
-        if (iterationCheck > np.pi).any():
+        iteration_check = np.abs(delta)
+        iteration_check[antipodal] = iteration_check[antipodal] - np.pi
+        if (iteration_check > np.pi).any():
             raise Exception('delta > np.pi')
 
         iterations += 1
-        if iterations >= 100:
-            raise Exception('Vincenty formula failed to converge')
+        if iterations >= 50:
+            conv_mask = np.abs(delta - delta_prime) > 1e-12
+            break
 
-    uSq = cosSqazi * (a * a - b * b) / (b * b)
+    uSq = cos_Sq_azi * (a * a - b * b) / (b * b)
     A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)))
     B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)))
-    dsigma = (
-        B
-        * sinsigma
+    d_sigma = (B * sin_sigma) * (
+        cos_2_sigma_m
+        + (B / 4)
         * (
-            cos2sigmam
-            + B
-            / 4
-            * (
-                cossigma * (-1 + 2 * cos2sigmam * cos2sigmam)
-                - B
-                / 6
-                * cos2sigmam
-                * (-3 + 4 * sinsigma * sinsigma)
-                * (-3 + 4 * cos2sigmam * cos2sigmam)
-            )
+            cos_sigma * (-1 + 2 * cos_2_sigma_m * cos_2_sigma_m)
+            - (B / 6 * cos_2_sigma_m)
+            * (-3 + 4 * sin_sigma * sin_sigma)
+            * (-3 + 4 * cos_2_sigma_m * cos_2_sigma_m)
         )
     )
     # length of the geodesic
-    s12 = b * A * (sigma - dsigma)
+    s12 = b * A * (sigma - d_sigma)
 
     # note special handling of exactly antipodal points where sin²sigma = 0
     # (due to discontinuity atan2(0, 0) = 0 but atan2(eps, 0) = np.pi/2 / 90°)
     # in which case bearing is always meridional, due north (or due south!)
 
-    azi1 = np.arctan2(cosU2 * sindelta, cosU1 * sinU2 - sinU1 * cosU2 * cosdelta)
-    azi1[np.abs(sinSqsigma) < eps] = 0
+    azi1 = np.arctan2(cos_U2 * sin_delta, cos_U1 * sin_U2 - sin_U1 * cos_U2 * cos_delta)
+    azi1[np.abs(sin_Sq_sigma) < eps] = 0
 
-    azi2 = np.arctan2(cosU1 * sindelta, -sinU1 * cosU2 + cosU1 * sinU2 * cosdelta)
-    azi2[np.abs(sinSqsigma) < eps] = np.pi
+    azi2 = np.arctan2(
+        cos_U1 * sin_delta, -sin_U1 * cos_U2 + cos_U1 * sin_U2 * cos_delta
+    )
+    azi2[np.abs(sin_Sq_sigma) < eps] = np.pi
 
     azi1 = wrap360deg(azi1 * 180 / np.pi)
     azi2 = wrap360deg(azi2 * 180 / np.pi)
@@ -151,6 +148,16 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     mask = s12 < eps
     azi1[mask] = None
     azi2[mask] = None
+
+    # use geographiclib for points which didn't converge
+    if conv_mask[conv_mask].shape[0] > 0:
+        vInverse = np.vectorize(Geodesic.WGS84.Inverse)
+        _ps = vInverse(
+            lats1[conv_mask], lons1[conv_mask], lats2[conv_mask], lons2[conv_mask]
+        )
+        s12[conv_mask] = [_p['s12'] for _p in _ps]
+        azi1[conv_mask] = [_p['azi1'] for _p in _ps]
+        azi2[conv_mask] = [_p['azi2'] for _p in _ps]
 
     return {'s12': s12, 'azi1': azi1, 'azi2': azi2, 'iterations': iterations}
 
@@ -182,19 +189,19 @@ def direct(lats1: 'list', lons1: 'list', brgs: 'list', dists: 'list') -> 'dict':
     azi1 = brg
     s = dists
 
-    sinazi1 = np.sin(azi1)
-    cosazi1 = np.cos(azi1)
+    sin_azi1 = np.sin(azi1)
+    cos_azi1 = np.cos(azi1)
 
-    tanU1 = (1 - f) * np.tan(lat1)
-    cosU1 = 1 / np.sqrt((1 + tanU1 * tanU1))
-    sinU1 = tanU1 * cosU1
+    tan_U1 = (1 - f) * np.tan(lat1)
+    cos_U1 = 1 / np.sqrt((1 + tan_U1 * tan_U1))
+    sin_U1 = tan_U1 * cos_U1
 
     # sigma1 = angular distance on the sphere from the equator to P1
-    sigma1 = np.arctan2(tanU1, cosazi1)
+    sigma1 = np.arctan2(tan_U1, cos_azi1)
 
-    sinazi = cosU1 * sinazi1  # azi = azimuth of the geodesic at the equator
-    cosSqazi = 1 - sinazi * sinazi
-    uSq = cosSqazi * (a * a - b * b) / (b * b)
+    sin_azi = cos_U1 * sin_azi1  # azi = azimuth of the geodesic at the equator
+    cos_Sq_azi = 1 - sin_azi * sin_azi
+    uSq = cos_Sq_azi * (a * a - b * b) / (b * b)
     A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)))
     B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)))
 
@@ -204,52 +211,46 @@ def direct(lats1: 'list', lons1: 'list', brgs: 'list', dists: 'list') -> 'dict':
     # the midpoint of the line
 
     iterations = 0
-    sigmaprime = 0
+    sigma_prime = 0
 
-    while (np.abs(sigma - sigmaprime) > 1e-12).any():
-        cos2sigmam = np.cos(2 * sigma1 + sigma)
-        sinsigma = np.sin(sigma)
-        cossigma = np.cos(sigma)
-        deltasigma = (
-            B
-            * sinsigma
+    while (np.abs(sigma - sigma_prime) > 1e-12).any():
+        cos_2_sigma_m = np.cos(2 * sigma1 + sigma)
+        sin_sigma = np.sin(sigma)
+        cos_sigma = np.cos(sigma)
+        delta_sigma = (B * sin_sigma) * (
+            cos_2_sigma_m
+            + B
+            / 4
             * (
-                cos2sigmam
-                + B
-                / 4
-                * (
-                    cossigma * (-1 + 2 * cos2sigmam * cos2sigmam)
-                    - B
-                    / 6
-                    * cos2sigmam
-                    * (-3 + 4 * sinsigma * sinsigma)
-                    * (-3 + 4 * cos2sigmam * cos2sigmam)
-                )
+                cos_sigma * (-1 + 2 * cos_2_sigma_m * cos_2_sigma_m)
+                - (B / 6 * cos_2_sigma_m)
+                * (-3 + 4 * sin_sigma * sin_sigma)
+                * (-3 + 4 * cos_2_sigma_m * cos_2_sigma_m)
             )
         )
-        sigmaprime = sigma
-        sigma = s / (b * A) + deltasigma
+        sigma_prime = sigma
+        sigma = s / (b * A) + delta_sigma
         iterations += 1
-        if iterations >= 100:
+        if iterations >= 50:
             raise Exception('Vincenty formula failed to converge')
 
-    x = sinU1 * sinsigma - cosU1 * cossigma * cosazi1
+    x = sin_U1 * sin_sigma - cos_U1 * cos_sigma * cos_azi1
     lat2 = np.arctan2(
-        sinU1 * cossigma + cosU1 * sinsigma * cosazi1,
-        (1 - f) * np.sqrt(sinazi * sinazi + x * x),
+        sin_U1 * cos_sigma + cos_U1 * sin_sigma * cos_azi1,
+        (1 - f) * np.sqrt(sin_azi * sin_azi + x * x),
     )
-    lambd = np.arctan2(
-        sinsigma * sinazi1, cosU1 * cossigma - sinU1 * sinsigma * cosazi1
+    lambda_ = np.arctan2(
+        sin_sigma * sin_azi1, cos_U1 * cos_sigma - sin_U1 * sin_sigma * cos_azi1
     )
-    C = f / 16 * cosSqazi * (4 + f * (4 - 3 * cosSqazi))
-    L = lambd - (1 - C) * f * sinazi * (
+    C = f / 16 * cos_Sq_azi * (4 + f * (4 - 3 * cos_Sq_azi))
+    L = lambda_ - (1 - C) * f * sin_azi * (
         sigma
         + C
-        * sinsigma
-        * (cos2sigmam + C * cossigma * (-1 + 2 * cos2sigmam * cos2sigmam))
+        * sin_sigma
+        * (cos_2_sigma_m + C * cos_sigma * (-1 + 2 * cos_2_sigma_m * cos_2_sigma_m))
     )
     lon2 = lon1 + L
-    azi2 = np.arctan2(sinazi, -x)
+    azi2 = np.arctan2(sin_azi, -x)
 
     lat2 = wrap90deg(lat2 * 180.0 / np.pi)
     lon2 = wrap180deg(lon2 * 180.0 / np.pi)

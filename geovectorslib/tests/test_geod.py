@@ -50,11 +50,28 @@ def describe_inverse():
 
     def large_size():
         np.random.seed(42)
-        lats1 = np.random.uniform(-90,90,100000)
-        lons1 = np.random.uniform(-180,180,100000)
-        lats2 = np.random.uniform(-90,90,100000)
-        lons2 = np.random.uniform(-180,180,100000)
+        lats1 = np.random.uniform(-90, 90, 100000)
+        lons1 = np.random.uniform(-180, 180, 100000)
+        lats2 = np.random.uniform(-90, 90, 100000)
+        lons2 = np.random.uniform(-180, 180, 100000)
         _ = geod.inverse(lats1, lons1, lats2, lons2)
+
+    def near_antipodal():
+        glib = Geodesic.WGS84
+
+        lats1 = np.array([0, 0, 16.24568372, 0])
+        lons1 = np.array([0, -180, 124.84613035, 0])
+        lats2 = np.array([0, 0, -16.70728358, 0.5])
+        lons2 = np.array([180, 180, -55.2234313, 179.7])
+
+        vInverse = np.vectorize(glib.Inverse)
+
+        g1s = vInverse(lats1, lons1, lats2, lons2)
+        g2s = geod.inverse(lats1, lons1, lats2, lons2)
+
+        s12 = [g1s[i]['s12'] for i in range(len(g1s))]
+        np.testing.assert_allclose(g2s['s12'], s12, rtol=1e-10, atol=1e-10)
+
 
 def describe_direct():
     def calculate(expect):
@@ -98,3 +115,11 @@ def describe_direct():
 
         # not testing lons as the -180;180 range is not consistent
         np.testing.assert_allclose(g2s['lat2'], lats2)
+
+    def large_size():
+        np.random.seed(42)
+        lats1 = np.random.uniform(-90, 90, 100000)
+        lons1 = np.random.uniform(-180, 180, 100000)
+        brgs = np.random.uniform(0, 360, 100000)
+        dist = np.random.uniform(0, 20e6, 100000)
+        _ = geod.inverse(lats1, lons1, brgs, dist)
