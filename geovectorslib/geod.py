@@ -44,6 +44,8 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
 
     # delta = difference in longitude on an auxiliary sphere
     delta = L
+    sin_delta = np.sin(delta)
+    cos_delta = np.cos(delta)
 
     # sigma = angular distance P₁ P₂ on the sphere
     sigma = np.zeros(lat1.shape)
@@ -209,6 +211,9 @@ def direct(lats1: 'list', lons1: 'list', brgs: 'list', dists: 'list') -> 'dict':
     # sigma = angular distance P₁ P₂ on the sphere
     # sigmam = angular distance on the sphere from the equator to
     # the midpoint of the line
+    sin_sigma = np.sin(sigma)
+    cos_sigma = np.cos(sigma)
+    cos_2_sigma_m = np.cos(2 * sigma1 + sigma)
 
     iterations = 0
     sigma_prime = 0
