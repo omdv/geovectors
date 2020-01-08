@@ -47,7 +47,7 @@ vs
 Install it directly into an activated virtual environment:
 
 ```text
-$ pip install GeoVectors
+pip install geovectorslib
 ```
 
 # Usage

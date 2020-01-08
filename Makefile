@@ -142,19 +142,12 @@ mkdocs-serve: mkdocs
 # BUILD #######################################################################
 
 DIST_FILES := dist/*.tar.gz dist/*.whl
-EXE_FILES := dist/$(PROJECT).*
 
 .PHONY: dist
 dist: install $(DIST_FILES)
 $(DIST_FILES): $(MODULES) pyproject.toml
 	rm -f $(DIST_FILES)
 	poetry build
-
-.PHONY: exe
-exe: install $(EXE_FILES)
-$(EXE_FILES): $(MODULES) $(PROJECT).spec
-	# For framework/shared support: https://github.com/yyuu/pyenv/wiki
-	poetry run pyinstaller $(PROJECT).spec --noconfirm --clean
 
 $(PROJECT).spec:
 	poetry run pyi-makespec $(PACKAGE)/__main__.py --onefile --windowed --name=$(PROJECT)
@@ -165,7 +158,7 @@ $(PROJECT).spec:
 upload: dist ## Upload the current version to PyPI
 	git diff --name-only --exit-code
 	poetry publish
-	bin/open https://pypi.org/project/$(PROJECT)
+	bin/open https://pypi.org/project/$(PACKAGE)
 
 # CLEANUP #####################################################################
 
