@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "geovectorslib"
-version = "1.0"
+version = "1.01"
 description = "Vectorized geodesic calculations."
 
 license = "MIT"
@@ -17,8 +17,7 @@ repository = "https://github.com/omdv/geovectors"
 keywords = [
 ]
 classifiers = [
-    # TODO: update this list to match your application: https://pypi.org/pypi?%3Aaction=list_classifiers
-    "Development Status :: 1 - Planning",
+    "Development Status :: 3 - Alpha",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
