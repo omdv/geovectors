@@ -12,21 +12,23 @@ The motivation was to have the accurate and fast vectorized geodesic routines fo
 
 This library is based on `numpy` and uses [Vincenty's formulae](https://en.wikipedia.org/wiki/Vincenty's_formulae). It is heavily based on the [Movable Type Scripts blog](https://www.movable-type.co.uk/scripts/latlong-vincenty.html) and Javascript [Geodesy](https://www.npmjs.com/package/geodesy) code.
 
-Vincenty's inverse algorithm is accurate, but sensitive to [nearly antipodal points](https://en.wikipedia.org/wiki/Vincenty%27s_formulae#Nearly_antipodal_points). One approach would be to return `NaN` for such points, with the assumption that they are not frequently observed in practical applications, however as [this discussion](https://gis.stackexchange.com/questions/84885/difference-between-vincenty-and-great-circle-distance-calculations) nicely pointed out the package cannot be complete if it cannot handle these situations. I found that the issue can be solved by relaxing one of convergence criterias, but it results in errors up to 0.25% vs geographiclib for these points.
+Vincenty's inverse algorithm is accurate, but sensitive to [nearly antipodal points](https://en.wikipedia.org/wiki/Vincenty%27s_formulae#Nearly_antipodal_points). One approach would be to return `NaN` for such points, with the assumption that they are not frequently observed in practical applications, however as [this discussion](https://gis.stackexchange.com/questions/84885/difference-between-vincenty-and-great-circle-distance-calculations) nicely pointed out the package cannot be complete if it cannot handle these situations. I found that the issue can be solved by relaxing one of convergence criteria, but it results in errors up to 0.25% vs geographiclib for these points.
 
 So, instead, this library uses the vectorized Vincenty's formulae with **geographiclib as a fallback** for unconverged points.
 
-See [notebook](https://github.com/omdv/geovectors/blob/master/notebooks/demo.ipynb) for execution time comparisons.
+See [notebook](https://github.com/omdv/geovectors/blob/master/notebooks/demo.ipynb) for execution time comparisons vs geographiclib.
 
-Direct method for 100,000 points:
 ```
+Direct method for 100,000 points
+
 94.9 ms ± 25 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 vs
 9.79 s ± 1.4 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
 
-Inverse method for 100,000 points:
 ```
+Inverse method for 100,000 points
+
 1.5 s ± 504 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 vs
 24.2 s ± 3.91 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
