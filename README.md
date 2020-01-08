@@ -3,8 +3,8 @@
 [![Unix Build Status](https://img.shields.io/travis/omdv/geovectors/master.svg?label=unix)](https://travis-ci.org/omdv/geovectors)
 [![Coverage Status](https://img.shields.io/coveralls/omdv/geovectors/master.svg)](https://coveralls.io/r/omdv/geovectors)
 [![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/omdv/geovectors.svg)](https://scrutinizer-ci.com/g/omdv/geovectors/?branch=master)
-[![PyPI Version](https://img.shields.io/pypi/v/GeoVectors.svg)](https://pypi.org/project/GeoVectors)
-[![PyPI License](https://img.shields.io/pypi/l/GeoVectors.svg)](https://pypi.org/project/GeoVectors)
+[![PyPI Version](https://img.shields.io/pypi/v/geovectorslib.svg)](https://pypi.org/project/geovectorslib)
+[![PyPI License](https://img.shields.io/pypi/l/geovectorslib.svg)](https://pypi.org/project/geovectorslib)
 
 This library provides vectorized direct and inverse geodesic methods.
 
