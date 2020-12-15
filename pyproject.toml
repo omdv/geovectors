@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "geovectorslib"
-version = "1.01"
+version = "1.02"
 description = "Vectorized geodesic calculations."
 
 license = "MIT"
