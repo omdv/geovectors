@@ -30,7 +30,6 @@ def test_inverse_base(expect):
     np.testing.assert_allclose(r['azi1'], t['azi1'], rtol=1e-7, atol=1e-7)
     np.testing.assert_allclose(r['azi2'], t['azi2'], rtol=1e-7, atol=1e-7)
     expect(r['iterations']) == t['iterations']
-    return None
 
 
 def test_inverse_vs_geographiclib():
@@ -55,7 +54,7 @@ def test_inverse_vs_geographiclib():
     lons = np.arange(-179, 179, 90)
     vp1 = [(p1, p2) for p1 in lats for p2 in lons]
     vp2 = [(0, p2) for _ in lats for p2 in lons]
-    
+
     g1s = [glib.Inverse(*vp1[i], *vp2[i]) for i in range(len(vp1))]
     g2s = geod.inverse(*list(zip(*vp1)), *list(zip(*vp2)))
     s12 = [g1s[i]['s12'] for i in range(len(g1s))]
@@ -64,7 +63,6 @@ def test_inverse_vs_geographiclib():
 
     np.testing.assert_allclose(g2s['s12'], s12, rtol=1e-5, atol=1e-5)
     np.testing.assert_allclose(g2s['azi1'], azi1, rtol=1e-3, atol=1e-3)
-    return None
 
 
 def test_inverse_large_size():
@@ -74,7 +72,6 @@ def test_inverse_large_size():
     lats2 = np.random.uniform(-90, 90, 100000)
     lons2 = np.random.uniform(-180, 180, 100000)
     _ = geod.inverse(lats1, lons1, lats2, lons2)
-    return None
 
 
 def test_inverse_near_antipodal():
@@ -92,7 +89,6 @@ def test_inverse_near_antipodal():
 
     s12 = [g1s[i]['s12'] for i in range(len(g1s))]
     np.testing.assert_allclose(g2s['s12'], s12, rtol=1e-10, atol=1e-10)
-    return None
 
 
 def test_direct_base(expect):

@@ -147,10 +147,8 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     azi1 = wrap360deg(azi1 * 180 / np.pi)
     azi2 = wrap360deg(azi2 * 180 / np.pi)
 
-    '''
-    if distance is too small - return 0 instead of `None`
-    to be consistent with geographiclib
-    '''
+    # if distance is too small - return 0 instead of `None`
+    # to be consistent with geographiclib
     mask = s12 < eps
     azi1[mask] = 0
     azi2[mask] = 0
