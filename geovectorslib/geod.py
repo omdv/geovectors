@@ -57,7 +57,8 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     # sigmam = angular distance on the sphere from the equator
     # to the midpoint of the line
     # azi = azimuth of the geodesic at the equator
-    delta_prime = np.zeros(lat1.shape)
+    # init delta_prime at very high value to not miss iterations when delta=0
+    delta_prime = 1 / eps * np.ones(lat1.shape)
     iterations = 0
 
     # init before loop to allow mask indexing
@@ -146,10 +147,13 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     azi1 = wrap360deg(azi1 * 180 / np.pi)
     azi2 = wrap360deg(azi2 * 180 / np.pi)
 
-    # if distance is too small
+    '''
+    if distance is too small - return 0 instead of `None`
+    to be consistent with geographiclib
+    '''
     mask = s12 < eps
-    azi1[mask] = None
-    azi2[mask] = None
+    azi1[mask] = 0
+    azi2[mask] = 0
 
     # use geographiclib for points which didn't converge
     if conv_mask[conv_mask].shape[0] > 0:
