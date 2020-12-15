@@ -1,6 +1,7 @@
 # Overview
 
 [![Unix Build Status](https://img.shields.io/travis/omdv/geovectors/master.svg?label=unix)](https://travis-ci.org/omdv/geovectors)
+![Testing](https://github.com/omdv/geovectors/workflows/Testing/badge.svg)
 [![Coverage Status](https://img.shields.io/coveralls/omdv/geovectors/master.svg)](https://coveralls.io/r/omdv/geovectors)
 [![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/omdv/geovectors.svg)](https://scrutinizer-ci.com/g/omdv/geovectors/?branch=master)
 [![PyPI Version](https://img.shields.io/pypi/v/geovectorslib.svg)](https://pypi.org/project/geovectorslib)
