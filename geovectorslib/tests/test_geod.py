@@ -72,15 +72,17 @@ def test_inverse_vs_geographiclib():
         (0, 179.9999999),
         (12.5, 179.9999999),
         (12.99999999, 175),
-        (0, 178.9999999)]
+        (0, 178.9999999),
+    ]
     vp2 = [
         (0, 180),
-        (0,-180),
+        (0, -180),
         (0, 180),
         (0, 180),
         (12.5, 180),
         (13, 175),
-        (0, 179.9999999)]
+        (0, 179.9999999),
+    ]
 
     g1s = [glib.Inverse(*vp1[i], *vp2[i]) for i in range(len(vp1))]
     g2s = geod.inverse(*list(zip(*vp1)), *list(zip(*vp2)))
@@ -91,6 +93,7 @@ def test_inverse_vs_geographiclib():
     np.testing.assert_allclose(g2s['s12'], s12, rtol=1, atol=1e-2)
     # failing this tests - looks like geovectorslib actually has issues with precision
     # np.testing.assert_allclose(g2s['azi1'], azi1, rtol=1e-3, atol=1e-5)
+
 
 def test_inverse_large_size():
     np.random.seed(42)

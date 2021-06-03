@@ -24,11 +24,8 @@ def wrap180deg(deg: 'np.ndarray') -> 'np.ndarray':
     mask = (deg <= -180) | (deg >= 180)
     deg[mask] = (deg[mask] + 540) % 360 - 180
 
-    deg = np.where(deg > 180-eps, -180, deg)
+    deg = np.where(deg > 180 - eps, -180, deg)
     return deg
-
-    # I want 180 and -180 = -180 (need <= on both)
-    # I want very close to 180 to be treated as 180
 
 
 def wrap360deg(deg: 'np.ndarray') -> 'np.ndarray':
