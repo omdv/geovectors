@@ -157,7 +157,10 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     if conv_mask[conv_mask].shape[0] > 0:
         vInverse = np.vectorize(Geodesic.WGS84.Inverse)
         _ps = vInverse(
-            lats1[conv_mask], lons1[conv_mask], lats2[conv_mask], lons2[conv_mask]
+            np.array(lats1)[conv_mask],
+            np.array(lons1)[conv_mask],
+            np.array(lats2)[conv_mask],
+            np.array(lons2)[conv_mask],
         )
         s12[conv_mask] = [_p['s12'] for _p in _ps]
         azi1[conv_mask] = [_p['azi1'] for _p in _ps]

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def wrap90deg(deg: 'np.ndarray') -> 'np.ndarray':
+def wrap90deg(deg: np.ndarray) -> np.ndarray:
     """
     Make sure that degrees (e.g. lats) is within -90;90 range.
 
@@ -12,7 +12,7 @@ def wrap90deg(deg: 'np.ndarray') -> 'np.ndarray':
     return deg
 
 
-def wrap180deg(deg: 'np.ndarray') -> 'np.ndarray':
+def wrap180deg(deg: np.ndarray) -> np.ndarray:
     """
     Make sure that degrees (e.g. lon) is within +/-(0-180) range.
 
@@ -28,7 +28,7 @@ def wrap180deg(deg: 'np.ndarray') -> 'np.ndarray':
     return deg
 
 
-def wrap360deg(deg: 'np.ndarray') -> 'np.ndarray':
+def wrap360deg(deg: np.ndarray) -> np.ndarray:
     """
     Make sure that degrees (e.g. heading) is within 360 range.
 
