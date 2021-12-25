@@ -1,0 +1,1 @@
+mkdocs @ file:///home/om/.cache/pypoetry/artifacts/43/b0/f2/474a8917eb1a97de5d66149155f444a97a6d7e38af5781c1cda26996e2/mkdocs-1.2.3-py3-none-any.whl
