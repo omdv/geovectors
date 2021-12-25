@@ -1,10 +1,16 @@
 import numpy as np
 from geographiclib.geodesic import Geodesic
 
-from geovectorslib.utils import wrap90deg, wrap180deg, wrap360deg
+from geovectorslib.utils import wrap90deg, wrap180deg, wrap360deg, InvalidEllipsoid
+from geovectorslib.datum import ellipsoid_constants
 
 
-def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict':
+def inverse(
+    lats1: 'list',
+    lons1: 'list',
+    lats2: 'list',
+    lons2: 'list',
+    ellipsoid='WGS84') -> 'dict':
     """
     Inverse geodesic using Vincenty approach.
 
@@ -19,14 +25,14 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
 
     eps = np.finfo(float).eps
 
+    try:
+        (a,b,f) = ellipsoid_constants()[ellipsoid]
+    except KeyError:
+        raise InvalidEllipsoid
+
     lon1, lon2 = map(wrap180deg, [np.array(lons1), np.array(lons2)])
     lat1, lat2 = map(wrap90deg, [np.array(lats1), np.array(lats2)])
     lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
-
-    # WGS84
-    a = 6378137.0
-    b = 6356752.314245
-    f = 1.0 / 298.257223563
 
     # L = difference in longitude
     L = lon2 - lon1
@@ -169,7 +175,13 @@ def inverse(lats1: 'list', lons1: 'list', lats2: 'list', lons2: 'list') -> 'dict
     return {'s12': s12, 'azi1': azi1, 'azi2': azi2, 'iterations': iterations}
 
 
-def direct(lats1: 'list', lons1: 'list', brgs: 'list', dists: 'list') -> 'dict':
+def direct(
+    lats1: 'list',
+    lons1: 'list',
+    brgs: 'list',
+    dists: 'list',
+    ellipsoid='WGS84') -> 'dict':
+
     """
     Direct geodesic using Vincenty approach.
 
@@ -186,13 +198,12 @@ def direct(lats1: 'list', lons1: 'list', brgs: 'list', dists: 'list') -> 'dict':
     https://www.movable-type.co.uk/scripts/latlong-vincenty.html
     """
 
+    try:
+        (a,b,f) = ellipsoid_constants()[ellipsoid]
+    except KeyError:
+        raise InvalidEllipsoid
+
     lon1, lat1, brg = map(np.radians, [lons1, lats1, brgs])
-
-    # WGS84
-    a = 6378137.0
-    b = 6356752.314245
-    f = 1.0 / 298.257223563
-
     azi1 = brg
     s = dists
 

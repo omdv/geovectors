@@ -1,5 +1,7 @@
 import numpy as np
 
+class InvalidEllipsoid(Exception):
+    pass
 
 def wrap90deg(deg: np.ndarray) -> np.ndarray:
     """

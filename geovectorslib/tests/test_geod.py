@@ -99,7 +99,6 @@ def test_inverse_vs_geographiclib():
     # utils.wrap360deg(np.asarray(azi1)),
     # rtol=1e-3, atol=1e-5))
 
-
 def test_inverse_large_size():
     np.random.seed(42)
     lats1 = np.random.uniform(-90, 90, 100000)
@@ -125,6 +124,21 @@ def test_inverse_near_antipodal():
     s12 = [g1s[i]['s12'] for i in range(len(g1s))]
     np.testing.assert_allclose(g2s['s12'], s12, rtol=1e-10, atol=1e-10)
 
+def test_inverse_near_antipodal_etrs():
+    glib = Geodesic.WGS84
+
+    lats1 = [0, 0, 16.24568372, 0]
+    lons1 = [0, -180, 124.84613035, 0]
+    lats2 = [0, 0, -16.70728358, 0.5]
+    lons2 = [180, 180, -55.2234313, 179.7]
+
+    vInverse = np.vectorize(glib.Inverse)
+
+    g1s = vInverse(lats1, lons1, lats2, lons2)
+    g2s = geod.inverse(lats1, lons1, lats2, lons2, 'ETRS89')
+
+    s12 = [g1s[i]['s12'] for i in range(len(g1s))]
+    np.testing.assert_allclose(g2s['s12'], s12, rtol=1e-10, atol=1e-10)
 
 def test_direct_base(expect):
     r = geod.direct(
@@ -151,6 +165,31 @@ def test_direct_base(expect):
 
     expect(r['iterations']) == t['iterations']
 
+def test_direct_base_etrs(expect):
+    r = geod.direct(
+        [-90, -89, 0, 89, 90],
+        [-180, -170, 0, 150, 180],
+        [40, 50, 300, 360, 30],
+        [5000.0, 3.0e6, 6.0e6, 10.0e6, 20.0e6],
+        'ETRS89'
+    )
+    t = {
+        'lat2': [-89.95523483, -62.46780606, 23.95378158, 1.02790157, -89.96480152],
+        'lon2': [-140.0, -121.47529512, -49.91980895, -30.0, -30.0],
+        'azi2': [
+            2.88637944e-12,
+            1.65855758e00,
+            2.88716163e02,
+            1.80000000e02,
+            1.80000000e02,
+        ],
+        'iterations': 4,
+    }
+    np.testing.assert_allclose(r['lat2'], t['lat2'], rtol=1e-8, atol=1e-8)
+    np.testing.assert_allclose(r['lon2'], t['lon2'], rtol=1e-8, atol=1e-8)
+    np.testing.assert_allclose(r['azi2'], t['azi2'], rtol=1e-8, atol=1e-8)
+
+    expect(r['iterations']) == t['iterations']
 
 def test_direct_vs_geographiclib():
     glib = Geodesic.WGS84
@@ -168,7 +207,6 @@ def test_direct_vs_geographiclib():
 
     # not testing lons as the -180;180 range is not consistent
     np.testing.assert_allclose(g2s['lat2'], lats2)
-
 
 def test_direct_large_size():
     np.random.seed(42)

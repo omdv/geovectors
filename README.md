@@ -58,8 +58,8 @@ After installation, the package can imported:
 ```text
 $ python
 >>> from geovectorslib import direct, inverse
->>> direct(lats1, lon1, bearings, distances)
->>> inverse(lats1, lons1, lats2, lons2)
+>>> direct(lats1, lon1, bearings, distances, ellipsoid='WGS84')
+>>> inverse(lats1, lons1, lats2, lons2, ellipsoid='WGS84')
 ```
 
 ```text
@@ -68,6 +68,16 @@ Longitudes in decimal degrees [-180; +180].
 Bearings in decimal degrees [0; 360].
 Distances in meters.
 ```
+
+You can specify a different ellipsoid or leave blank to use WGS84.
+Available ellipsoid keywords are:
+- ETRS89
+- WGS84
+- GRS80
+- GRS67
+- Intl-1924
+- Clarke-1880
+- Airy-1830
 
 # References
 
